@@ -13,11 +13,22 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Build with Buildozer
-        uses: ArtemSundaev/buildozer-action@v1.2
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          command: buildozer -v android debug
-          subfolder: .
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install "cython<3.0.0" buildozer
+
+      - name: Build APK
+        run: |
+          buildozer init
+          sed -i 's/requirements = python3,kivy/requirements = python3,kivy,opencv-python,numpy/' buildozer.spec
+          sed -i 's/#android.permissions = INTERNET/android.permissions = CAMERA,INTERNET/' buildozer.spec
+          buildozer -v android debug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
