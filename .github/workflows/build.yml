@@ -7,10 +7,10 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
-      - name: Checkout repository
+      - name: Checkout Code
         uses: actions/checkout@v4
 
       - name: Set up Python
@@ -18,16 +18,18 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Install dependencies
+      - name: Install System Dependencies
         run: |
-          pip install --upgrade pip
+          sudo apt-get update
+          sudo apt-get install -y build-essential ccache git libffi-dev libssl-dev python3-dev gzip tar zip unzip openjdk-17-jdk
+
+      - name: Install Buildozer and Cython
+        run: |
+          pip install --upgrade pip setuptools
           pip install "cython<3.0.0" buildozer
 
       - name: Build APK
         run: |
-          buildozer init
-          sed -i 's/requirements = python3,kivy/requirements = python3,kivy,opencv-python,numpy/' buildozer.spec
-          sed -i 's/#android.permissions = INTERNET/android.permissions = CAMERA,INTERNET/' buildozer.spec
           buildozer -v android debug
 
       - name: Upload APK
